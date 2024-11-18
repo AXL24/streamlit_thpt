@@ -35,7 +35,12 @@ def main():
     
     with st.spinner("Đang tải dữ liệu..."):
         combined_data = load_data()
-    
+        
+    # Search 
+    st.sidebar.header("Tìm kiếm thí sinh")
+    selected_year = st.sidebar.selectbox("Chọn năm để tìm kiếm", [2022, 2023, 2024])
+    roll_number = st.sidebar.text_input("Nhập số báo danh")
+
     # Sidebar: Bộ lọc
     st.sidebar.header("Bộ lọc")
     cac_nam = st.sidebar.multiselect("Chọn năm", [2022, 2023, 2024], default=[2022, 2023, 2024])
@@ -44,11 +49,7 @@ def main():
         ["toan", "ngu_van", "ngoai_ngu", "vat_li", "hoa_hoc", "sinh_hoc", "lich_su", "dia_li", "gdcd"],
         default=["toan", "ngu_van"]
     ) 
-    # Search 
-    st.sidebar.header("Tìm kiếm thí sinh")
-    selected_year = st.sidebar.selectbox("Chọn năm để tìm kiếm", [2022, 2023, 2024])
-    roll_number = st.sidebar.text_input("Nhập số báo danh")
-
+  
     # Lọc dữ liệu theo năm
     filtered_data = combined_data[combined_data["nam"].isin(cac_nam)]
 
