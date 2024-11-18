@@ -1,4 +1,4 @@
-port streamlit as st
+import streamlit as st
 from merge import connect_to_mongodb, fetch_data
 import pandas as pd
 import plotly.express as px
