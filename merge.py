@@ -22,6 +22,7 @@ def fetch_data(db, collection_name, year_filter=None):
     # Truy vấn dữ liệu MongoDB
     records = db[collection_name].find(query, projection)
     df = pd.DataFrame(records)
+    
 
     # Chuẩn hóa tên cột
     df.columns = df.columns.str.lower()
