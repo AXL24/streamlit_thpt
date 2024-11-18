@@ -15,21 +15,23 @@ def load_data():
     
     # Tải dữ liệu từ 2 collection năm 2023 và 2024
     data_2022 = fetch_data(db, "2022")  
-    data_2022["nam"] = 2022  # Thêm cột "year"
+    data_2022["nam"] = 2022  # Thêm cột "nam"
     
     data_2023 = fetch_data(db, "2023")  
-    data_2023["nam"] = 2023  # Thêm cột "year"
+    data_2023["nam"] = 2023  # Thêm cột "nam"
     
     data_2024 = fetch_data(db, "2024")  
-    data_2024["nam"] = 2024  # Thêm cột "year"
+    data_2024["nam"] = 2024  # Thêm cột "nam"
     
     # Kết hợp dữ liệu
     combined_data = pd.concat([data_2022, data_2023, data_2024], ignore_index=True)
+    # Convert 'sbd' to string for consistent filtering
+    combined_data["sbd"] = combined_data["sbd"].astype(str)
     return combined_data
 
 # Tạo ứng dụng Streamlit
 def main():
-    st.title("Phân Tích Điểm THPT Các Năm Gần Đây \n sử dụng cloud mongodb")
+    st.title("Phân Tích Điểm THPT Các Năm Gần Đây \n sử dụng cloud MongoDB")
     
     with st.spinner("Đang tải dữ liệu..."):
         combined_data = load_data()
@@ -42,7 +44,7 @@ def main():
         ["toan", "ngu_van", "ngoai_ngu", "vat_li", "hoa_hoc", "sinh_hoc", "lich_su", "dia_li", "gdcd"],
         default=["toan", "ngu_van"]
     ) 
-     # Search 
+    # Search 
     st.sidebar.header("Tìm kiếm thí sinh")
     selected_year = st.sidebar.selectbox("Chọn năm để tìm kiếm", [2022, 2023, 2024])
     roll_number = st.sidebar.text_input("Nhập số báo danh")
@@ -50,9 +52,13 @@ def main():
     # Lọc dữ liệu theo năm
     filtered_data = combined_data[combined_data["nam"].isin(cac_nam)]
 
-    #Tìm kiếm theo sbd
+    # Tìm kiếm theo số báo danh
     st.subheader("1. Tìm kiếm theo số báo danh")
     if roll_number:
+        # Ensure roll_number is treated as string for consistent filtering
+        roll_number = str(roll_number)
+        
+        # Filter the data
         search_results = combined_data[(combined_data["nam"] == selected_year) & 
                                        (combined_data["sbd"] == roll_number)]
         
@@ -62,20 +68,14 @@ def main():
         else:
             st.warning(f"Không tìm thấy kết quả cho số báo danh: {roll_number} năm {selected_year}")
 
-
-    
-
-
     # Hiển thị bảng dữ liệu
     st.subheader("2. Bộ dữ liệu đã lọc")
     st.write(f"Tổng số bản ghi: {len(filtered_data)}")
     st.dataframe(filtered_data.head(100))  # Hiển thị 100 bản ghi đầu tiên
     
 
-
     # Phân tích điểm trung bình theo môn học
     if not filtered_data.empty:
-        
         st.subheader("3.1. Điểm trung bình theo môn học của năm đã chọn")
         trung_binh = filtered_data[cac_mon].mean().reset_index()
         trung_binh.columns = ["Môn", "Điểm trung bình"]
@@ -98,6 +98,5 @@ def main():
         fig_trend = px.line(xu_huong, x="nam", y="Điểm trung bình", color="mon", title="Xu hướng điểm theo năm")
         st.plotly_chart(fig_trend)
 
-    
 if __name__ == "__main__":
     main()
