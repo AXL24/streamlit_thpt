@@ -4,23 +4,23 @@ import pandas as pd
 import plotly.express as px
 
 # Kết nối MongoDB
-MONGO_URI = "mongodb+srv://axellent2004:0964212618@bigdata.l07vk.mongodb.net/"  # Thay bằng MongoDB URI của bạn
+MONGO_URI = "mongodb+srv://axellent2004:0964212618@bigdata.l07vk.mongodb.net/"  
 DATABASE_NAME = "thpt"
 
-# Caching để tăng hiệu suất
+
 @st.cache_data
 def load_data():
     # Kết nối tới MongoDB
     db = connect_to_mongodb(MONGO_URI, DATABASE_NAME) 
     
     # Tải dữ liệu từ 2 collection năm 2023 và 2024
-    data_2022 = fetch_data(db, "2022")  # Kết quả là một DataFrame
+    data_2022 = fetch_data(db, "2022")  
     data_2022["nam"] = 2022  # Thêm cột "year"
     
-    data_2023 = fetch_data(db, "2023")  # Kết quả là một DataFrame
+    data_2023 = fetch_data(db, "2023")  
     data_2023["nam"] = 2023  # Thêm cột "year"
     
-    data_2024 = fetch_data(db, "2024")  # Kết quả là một DataFrame
+    data_2024 = fetch_data(db, "2024")  
     data_2024["nam"] = 2024  # Thêm cột "year"
     
     # Kết hợp dữ liệu
@@ -29,9 +29,8 @@ def load_data():
 
 # Tạo ứng dụng Streamlit
 def main():
-    st.title("Phân Tích Điểm THPT - 2023 & 2024\nsử dụng cloud mongodb")
+    st.title("Phân Tích Điểm THPT Các Năm Gần Đây \n sử dụng cloud mongodb")
     
-    # Tải dữ liệu
     with st.spinner("Đang tải dữ liệu..."):
         combined_data = load_data()
     
@@ -43,18 +42,16 @@ def main():
         ["toan", "ngu_van", "ngoai_ngu", "vat_li", "hoa_hoc", "sinh_hoc", "lich_su", "dia_li", "gdcd"],
         default=["toan", "ngu_van"]
     ) 
-     # Search by roll number
+     # Search 
     st.sidebar.header("Tìm kiếm thí sinh")
     selected_year = st.sidebar.selectbox("Chọn năm để tìm kiếm", [2022, 2023, 2024])
     roll_number = st.sidebar.text_input("Nhập số báo danh")
 
     # Lọc dữ liệu theo năm
     filtered_data = combined_data[combined_data["nam"].isin(cac_nam)]
-    
-    # Hiển thị bảng dữ liệu
-    st.subheader("Dữ liệu đã lọc")
-    st.write(f"Tổng số bản ghi: {len(filtered_data)}")
-    st.dataframe(filtered_data.head(100))  # Hiển thị 100 bản ghi đầu tiên
+
+    #Tìm kiếm theo sbd
+    st.subheader("1. Tìm kiếm theo số báo danh")
     if roll_number:
         search_results = combined_data[(combined_data["nam"] == selected_year) & 
                                        (combined_data["sbd"] == roll_number)]
@@ -66,32 +63,36 @@ def main():
             st.warning(f"Không tìm thấy kết quả cho số báo danh: {roll_number} năm {selected_year}")
 
 
+    
+
+
+    # Hiển thị bảng dữ liệu
+    st.subheader("2. Bộ dữ liệu đã lọc")
+    st.write(f"Tổng số bản ghi: {len(filtered_data)}")
+    st.dataframe(filtered_data.head(100))  # Hiển thị 100 bản ghi đầu tiên
+    
 
 
     # Phân tích điểm trung bình theo môn học
     if not filtered_data.empty:
-        # Search functionality
-        st.subheader("Tìm kiếm theo số báo danh")
-   
-
-
-        st.subheader("Điểm trung bình theo môn học của năm đã chọn")
+        
+        st.subheader("3.1. Điểm trung bình theo môn học của năm đã chọn")
         trung_binh = filtered_data[cac_mon].mean().reset_index()
         trung_binh.columns = ["Môn", "Điểm trung bình"]
         st.write(trung_binh)
 
         # Biểu đồ điểm trung bình
-        fig_avg = px.bar(trung_binh, x="Môn", y="Điểm trung bình", title="Điểm trung bình theo môn học")
+        fig_avg = px.bar(trung_binh, x="Môn", y="Điểm trung bình", title="3.2. Điểm trung bình theo môn học")
         st.plotly_chart(fig_avg)
 
         # Phân phối điểm
-        st.subheader("Phân phối điểm")
+        st.subheader("4. Phân phối điểm")
         for mon in cac_mon:
             fig_dist = px.histogram(filtered_data, x=mon, nbins=20, title=f"Phân phối điểm {mon} của năm đã chọn")
             st.plotly_chart(fig_dist)
 
         # Xu hướng điểm qua các năm
-        st.subheader("Xu hướng điểm qua các năm đã chọn")
+        st.subheader("5. Xu hướng điểm qua các năm đã chọn")
         xu_huong = filtered_data.groupby(["nam"])[cac_mon].mean().reset_index()
         xu_huong = pd.melt(xu_huong, id_vars=["nam"], var_name="mon", value_name="Điểm trung bình")
         fig_trend = px.line(xu_huong, x="nam", y="Điểm trung bình", color="mon", title="Xu hướng điểm theo năm")
