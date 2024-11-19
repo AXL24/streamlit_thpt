@@ -15,17 +15,16 @@ def load_data():
     
     # Tải dữ liệu từ 2 collection năm 2023 và 2024
     data_2022 = fetch_data(db, "2022")  
-    data_2022["nam"] = 2022  # Thêm cột "nam"
+    data_2022["nam"] = 2022  # Thêm cột
     
     data_2023 = fetch_data(db, "2023")  
-    data_2023["nam"] = 2023  # Thêm cột "nam"
+    data_2023["nam"] = 2023  # Thêm cột 
     
     data_2024 = fetch_data(db, "2024")  
-    data_2024["nam"] = 2024  # Thêm cột "nam"
+    data_2024["nam"] = 2024  # Thêm cột
     
     # Kết hợp dữ liệu
     combined_data = pd.concat([data_2022, data_2023, data_2024], ignore_index=True)
-    # Convert 'sbd' to string for consistent filtering
     combined_data["sbd"] = combined_data["sbd"].astype(str)
     return combined_data
 
@@ -33,8 +32,7 @@ def load_data():
 def main():
     st.title("Phân Tích Điểm THPT Các Năm Gần Đây \n sử dụng cloud MongoDB")
     
-    with st.spinner("Đang tải dữ liệu..."):
-        combined_data = load_data()
+    combined_data = load_data()
         
     # Search 
     st.sidebar.header("Tìm kiếm thí sinh")
@@ -56,10 +54,6 @@ def main():
     # Tìm kiếm theo số báo danh
     st.subheader("1. Tìm kiếm theo số báo danh")
     if roll_number:
-        # Ensure roll_number is treated as string for consistent filtering
-        roll_number = str(roll_number)
-        
-        # Filter the data
         search_results = combined_data[(combined_data["nam"] == selected_year) & 
                                        (combined_data["sbd"] == roll_number)]
         
